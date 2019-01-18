@@ -1,2 +1,0 @@
-## License
-This software is patented and owned by [Truong-Huy D. Nguyen](https://github.com/truonghuy), [Magy Seif El-Nasr](https://camd.northeastern.edu/faculty/magy-seif-el-nasr/), [Andy Bryant](https://github.com/andymbryant), and [Northeastern University](https://www.khoury.northeastern.edu/).

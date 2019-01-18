@@ -1,5 +1,4 @@
-# Glyph
-### Dota 2 Data
+# Glyph - Dota 2 Data
 
 Glyph application, visualizing data from Dota 2.
 
@@ -11,6 +10,10 @@ The State Grap is the node-link diagram of the game states and actions of the pl
 
 The Sequence Graph visually shows nodes that represent the sequence patterns exhibited by players. Each node represents a full sequence and the distance between the nodes depends on the similarity of the sequence patterns between them.
 
+## License
+This software is patented and owned by [Truong-Huy D. Nguyen](https://github.com/truonghuy), [Magy Seif El-Nasr](https://camd.northeastern.edu/faculty/magy-seif-el-nasr/), [Andy Bryant](https://github.com/andymbryant), and [Northeastern University](https://www.khoury.northeastern.edu/).
+
+All rights reserved. Any use is forbidden without express written permission.
 
 ### Get Started
 
@@ -19,3 +22,4 @@ git clone
 cd glyph-dota
 run live server in IDE of choice
 ```
+
