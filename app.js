@@ -57,12 +57,14 @@ var prevStroke, prevFill, prevFillOpa, prevStrokeOpa, prevTextFill;
 
 /******************** State graph **********************************/
 
+// D3 force-directed layout
 var stateforce = d3.layout.force()
     .charge(-1500)
     .linkDistance(1000)
     .size([stateWidth, stateHeight])
     .on("tick", statetick);
 
+// Append State Graph to DOM
 svg = d3.select("#state-graph-svg")
     .attr("width", stateWidth)
     .attr("height", stateHeight)
@@ -97,20 +99,23 @@ svg.append("defs").selectAll("marker")
     .append("path")
     .attr("d", "M0,-5L10,0L0,5");
 
-// for sticky drag
+// For sticky drag
 var statedrag = stateforce.drag().on("dragstart", dragstart);
 
 /********************* Behavior graph ******************************/
 
+// Set min and max distance
 const minDistance = 50;
 const maxDistance = 500;
 
+// D3 force-directed layout
 var behaviorforce = d3.layout.force()
     .charge(-100)
     .linkDistance(distanceMapping)
     .size([sequenceWidth, sequenceHeight])
     .on("tick", behaviortick);
 
+// Append Sequence Graph to DOM
 svg = d3.select("#sequence-graph-svg")
     .attr("width", sequenceWidth)
     .attr("height", sequenceHeight)
@@ -125,7 +130,7 @@ var behaviorlink = behaviorSvgContainer.append("g").attr("id", "link_container")
 var behaviornode = behaviorSvgContainer.append("g").attr("id", "node_container").selectAll(".behaviornode");
 
 
-// for sticky drag
+// For sticky drag
 var behaviordrag = behaviorforce.drag()
     .on("dragstart", behaviorDragstart);
 
@@ -133,6 +138,7 @@ var behaviordrag = behaviorforce.drag()
 var stateMap = {};
 var actionMap = {};
 
+// Update function for incoming JSON
 function updateJSON(error, json) {
 
     if (error) {
@@ -151,12 +157,15 @@ function updateJSON(error, json) {
         stateMap[aNode.id] = aNode;
     });
 
+    // set actionmap for fast access
     actionMap = {};
     data.links.forEach(function (aLink) {
         actionMap[aLink.id] = aLink;
     });
 
     visualizeStateData();
+
+    // If Group Graph Container exists add group trajectories from data
     if (data.team_trajectories) {
         let group = document.getElementById('group-graph-container')
         group.classList.remove('none')
@@ -171,10 +180,12 @@ function updateJSON(error, json) {
 
     visualizeBehaviorData();
 
+    // Show links between nodes, can be toggled by user
     showLinks = true;
     toggleShowLinks();
 }
 
+// Functions for when user changes level
 function updateLevel() {
     clearHighlight();
     clearTextField();
@@ -188,6 +199,7 @@ var linearStateNodeScale, linearStateLinkScale;
 
 var presetStateNodes = function (nodes) {
 
+    // Settings for State nodes
     margin = 100;
     maxX = 890;
 
@@ -204,35 +216,38 @@ var presetStateNodes = function (nodes) {
     nodes[1].y = stateHeight - margin;
 };
 
+// Set labels
 var state_node_label = function (d) {
-
     return extractDetails(d.details);
-
 };
 
+// Set labels
 var state_link_label = function (d) {
     return d.details;
 };
 
-
+// Visualization for State data
 function visualizeStateData() {
     linearStateNodeScale = getStateNodeScale(data.nodes);
     linearStateLinkScale = getStateLinkScale(data.links);
 
-    // Prefix positions of start and end nodes------
+    // Prefix positions of start and end nodes
     presetStateNodes(data.nodes);
-    //---------------------------------------------
 
+    // Add links to the state via d3 force
     stateforce.nodes(data.nodes)
         .links(data.links);
 
+    // d3 force
     statelink = statelink.data(data.links);
     statenode = statenode.data(data.nodes);
 
+    // d3 v3 exit and remove methods, necessary for update
     statelink.exit().remove();
     statenode.exit().remove();
 
-    // UPDATE --------------------
+    // d3 update (d3 v3 pattern)
+    // Update for statelink and statenode
     statelink.attr("id", function (d, i) {
         return 'statelink' + d.id;
     })
@@ -278,7 +293,8 @@ function visualizeStateData() {
         return state_node_label(d);
     });
 
-    // ENTER ----------------
+    // d3 enter (d3 v3 pattern)
+    // Enter for statelink and stategroup
     var statelinkGroup = statelink.enter().append("path") //.append("line")
         .attr("class", updateLinkClass)
         .attr("id", function (d, i) {
@@ -308,6 +324,7 @@ function visualizeStateData() {
         return state_link_label(d);
     });
 
+    // Append group for dragging
     var statenodeGroup = statenode.enter().append("g")
         .attr("class", function (d) {
             return "statenode " + d.type;
@@ -315,9 +332,6 @@ function visualizeStateData() {
         .attr("id", function (d, i) {
             return 'statenode' + d.id;
         })
-        //andy
-        //disabled
-        // .on("dblclick", dblclick)
         .call(statedrag);
 
     statenodeGroup.append("title").text(function (d) {
@@ -345,23 +359,20 @@ function visualizeStateData() {
             return state_node_label(d);
         });
 
-    // EXIT --------------------------------------
-
-
     stateforce.start();
-
 }
 
 
 // Group Graph
-
 var groupForce = d3.layout.force()
     .charge(-100)
+    // TODO Enable distance mapping
     // .linkDistance(distanceMapping)
     .linkDistance(100)
     .size([groupWidth, groupHeight])
     .on("tick", groupTick);
 
+// Append Group Graph to the DOM
 groupSvg = d3.select("#group-graph-svg")
     .attr("width", groupWidth)
     .attr("height", groupHeight)
@@ -369,14 +380,13 @@ groupSvg = d3.select("#group-graph-svg")
     .call(d3.behavior.zoom().on("zoom", behaviorZoomPan))
     .on("dblclick.zoom", null)
 
-
 // the graph components (nodes and links)
 var groupSvgContainer = groupSvg.append("g").attr("id", "group-graph-container");
 var groupLink = groupSvgContainer.append("g").attr("id", "group-link-container").selectAll(".groupLink");
 var groupNode = groupSvgContainer.append("g").attr("id", "group-node-container").selectAll(".groupNode");
 
 
-// for sticky drag
+// For sticky drag
 var groupDrag = groupForce.drag()
     .on("dragstart", groupDragStart);
 
@@ -419,6 +429,7 @@ var changeStateNodeSizeType = function (flag) {
     }
 };
 
+// d3 v3 pattern for tick
 function statetick(e) {
     statelink.attr("d", function (d) {
         var x1 = d.source.x,
@@ -491,6 +502,7 @@ function getLinkTypeFromMeaning(meaning) {
     return "mid";
 }
 
+// Get node scale based on min and max values
 function getStateNodeScale(dataset) {
     var minVisits = d3.min(dataset, function (d) {
         return d.user_ids.length;
@@ -504,6 +516,7 @@ function getStateNodeScale(dataset) {
         .range([minNodeSize, maxNodeSize]);
 }
 
+// Get link scale based on min and max values
 function getStateLinkScale(dataset) {
     var minVisits = d3.min(dataset, function (d) {
         return d.user_ids.length;
@@ -517,7 +530,7 @@ function getStateLinkScale(dataset) {
         .range([minNodeSize, maxNodeSize]);
 }
 
-// collision detection
+// Collision detection
 // Resolves collisions between d and all other circles.
 function collide(alpha) {
     var quadtree = d3.geom.quadtree(data.nodes);
@@ -549,19 +562,19 @@ function collide(alpha) {
     };
 }
 
-
+// d3 zoom and pan for State Graph
 function stateZoomPan() {
     stateSvgContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
-
+// d3 zoom and pan for Sequence Graph
 function behaviorZoomPan() {
     behaviorSvgContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
-// for sticky drag
+// For sticky drag
 // This callback can access this (the DOM object it is called upon)
 function dblclick(d) {
-    // somehow this works, but 
+    // Somehow this works, but 
     // d3.event.sourceEvent.stopPropagation(); does not
 
     d3.event.stopPropagation();
@@ -574,7 +587,7 @@ function dragstart(d) {
     stateDisplayInfo(d);
 }
 
-// display info in textboxes
+// Display info in textboxes
 function stateDisplayInfo(d) {
 
     d3.select("#statenode-id").text(d.id);
@@ -586,16 +599,13 @@ function stateDisplayInfo(d) {
     else d3.select("#players-state").text(d.user_ids.slice(0, userIDLengthLimit) + ",....");
 }
 
-// display link info in textboxes
+// Display link info in textboxes
 function stateLinkClicked(d) {
-
     d3.select("#num-players-statelink").text(d.user_ids.length);
     if (d.user_ids.length <= userIDLengthLimit)
         d3.select("#players-statelink").text(d.user_ids);
     else d3.select("#players-statelink").text(d.user_ids.slice(0, userIDLengthLimit) + ",....");
     d3.select("#statelink-info").text(state_link_label(d));
-
-
 }
 
 function getNumTrue(itemArray) {
@@ -606,7 +616,7 @@ function getNumTrue(itemArray) {
     return result;
 }
 
-// index 0: start, index 1: end
+// Index 0: start, index 1: end
 function setNodeForFreq(index) {
     var value = d3.select("#statenode-id").text();
     if (index == 0) {
@@ -619,6 +629,7 @@ function setNodeForFreq(index) {
 
 var linearScaleBehaviorNode, distanceBehaviorScale;
 
+// Depending on state of completion, return state string
 function returnHTML(d, i) {
     var nodeinfo = i + " (";
     if (d.completed) {
@@ -645,12 +656,14 @@ function visualizeBehaviorData() {
     behaviorlink = behaviorlink.data(data.traj_similarity);
     behaviornode = behaviornode.data(data.trajectories);
 
+    // d3 enter method for behavior link
     behaviorlink.enter().append("line")
         .attr("class", "behaviorlink")
         .attr("id", function (d, i) {
             return 'behaviorlink' + d.id;
         });
 
+    // d3 enter method for behavior node
     behaviornode.enter().append("g")
         .attr("id", function (d, i) {
 
@@ -665,12 +678,9 @@ function visualizeBehaviorData() {
                 return fill(d.id)
             }
         })
-
-        //andy disabled
-        // .on("dblclick", dblclick)
-        // .on("mouseover", displayInfo)
         .call(behaviordrag);
 
+    // Add SVG circle to behaviornode group
     behaviornode.append("circle")
         .attr("r", function (d) {
             return linearScaleBehaviorNode(d.user_ids.length);
@@ -692,6 +702,7 @@ function visualizeBehaviorData() {
                 .style('opacity', 0)
         })
 
+    // Add text to behaviornode group
     behaviornode.append("text")
         .attr("class", function (d) {
             if (d.completed)
@@ -709,7 +720,7 @@ function visualizeBehaviorData() {
             return i;
         });
 
-    // UPDATE --------------------
+    // d3 update (d3 v3 pattern)
     behaviorlink.attr("id", function (d, i) {
         return 'behaviorlink' + d.id;
     })
@@ -752,6 +763,7 @@ function visualizeBehaviorData() {
             return i;
         });
 
+    // d3 exit pattern
     behaviorlink.exit().remove();
     behaviornode.exit().remove();
     behaviorforce.start();
@@ -759,22 +771,16 @@ function visualizeBehaviorData() {
 
 // Group Graph
 
-function returnGroupHTML(d, i) {
-    // return `<div class="tooltip-inner">
-    //             <div><span class="tooltip-key">Sequence Node Info: </span>${nodeinfo}</div>
-    //             <div><span class="tooltip-key">Player IDs with this Pattern:</span> (${d.user_ids.length}) ${d.user_ids.join('')}</div>
-    //             <div><span class="tooltip-key">Action Sequence: </span>${compressArray(d.action_meaning)}</div>
-    //         </div>`
-}
-
 function visualizeGroupData() {
-    let tooltip = d3.select('#tooltip')
+    // TODO add tooltip to Group Graph nodes
+    // let tooltip = d3.select('#tooltip')
     groupForce.nodes(data.team_trajectories)
         .links(data.team_traj_similarity);
 
     groupLink = groupLink.data(data.team_traj_similarity);
     groupNode = groupNode.data(data.team_trajectories);
 
+    // d3 enter pattern
     groupLink.enter().append("line")
         .attr("class", "groupLink")
         .attr("id", function (d, i) {
@@ -794,20 +800,6 @@ function visualizeGroupData() {
         .attr('r', 15)
         .attr('pointer-events', 'fill')
         .attr('cursor', 'pointer')
-        // .on("mouseover", function (d, i) {
-        //     activateCompleteSequence()
-        //     displayInfo(d)
-        //     shuffleNodeOrder(d.index)
-        //     tooltip
-        //         .style('opacity', 1)
-        //         .style("left", d3.event.pageX + "px")
-        //         .style("top", d3.event.pageY + "px")
-        //         .html(returnGroupHTML(d, i))
-        // })
-        // .on("mouseout", function (d) {
-        //     tooltip
-        //         .style('opacity', 0)
-        // })
         .on("click", function (d) {
             clearGroupNodesActive()
             d3.select(this).classed('groupNode-active', true)
@@ -821,7 +813,7 @@ function visualizeGroupData() {
             return i;
         });
 
-    // UPDATE --------------------
+    // d3 update (d3 v3 pattern)
     groupLink.attr("id", function (d, i) {
         return 'groupLink';
     })
@@ -833,7 +825,6 @@ function visualizeGroupData() {
 
 
     groupNode.select("text")
-
         .attr("font-size", function (d) {
             return 20;
         })
@@ -841,11 +832,13 @@ function visualizeGroupData() {
             return i;
         });
 
+    // d3 exit pattern
     groupLink.exit().remove();
     groupNode.exit().remove();
     groupForce.start();
 }
 
+// On select, clear other active group nodes
 function clearGroupNodesActive() {
     d3.selectAll('.groupNode')
         .each(function (d) {
@@ -856,14 +849,13 @@ function clearGroupNodesActive() {
         })
 }
 
-function toggleGroupNodeActive() {
-
-}
-
+// Get unique value
 function unique(value, index, self) {
     return self.indexOf(value) === index;
 }
 
+// Highlight individual sequence trajectories
+// Used in Highlight Panel
 function highlightIndTrajectories(d) {
     let uniqueTraj = d.team_members_index.filter(unique)
     setPlaytraceIndex(uniqueTraj)
@@ -871,9 +863,7 @@ function highlightIndTrajectories(d) {
 
 }
 
-
-
-//Andy
+// Shuffles order of sequences in data, resulting in relayering and rerendering SVG elements
 function shuffleNodeOrder(node) {
     nArray = d3.select("#playtrace-index").node().value.replace(/\s/g, '').split(",");
     let hoverNode = node.toString()
@@ -882,11 +872,12 @@ function shuffleNodeOrder(node) {
     }
 }
 
+// Distance mapping with similariry
 function distanceMapping(d) {
     return distanceBehaviorScale(d.similarity);
 }
 
-
+// d3 v3 pattern, tick behavior
 function behaviortick() {
     behaviorlink.attr("x1", function (d) {
         return d.source.x;
@@ -906,6 +897,7 @@ function behaviortick() {
         });
 }
 
+// d3 v3 pattern, tick behavior
 function groupTick() {
     groupLink.attr("x1", function (d) {
         return d.source.x;
@@ -925,7 +917,7 @@ function groupTick() {
         });
 }
 
-// set minValue and maxValue
+// Set minValue and maxValue
 function getBehaviorNodeScale(dataset) {
     var minValue = d3.min(dataset, function (d) {
         return d.user_ids.length;
@@ -955,8 +947,10 @@ function getBehaviorDistanceScale(dataset) {
         .range([minDistance, maxDistance]);
 }
 
+// Show links between behavior nodes, can be toggled
 var showLinks = true;
 
+// Toggle links
 function toggleShowLinks() {
     if (showLinks) {
         d3.selectAll(".behaviorlink").style("stroke", "transparent");
@@ -967,13 +961,13 @@ function toggleShowLinks() {
     showLinks = !showLinks;
 }
 
-// display info in textboxes
+// Display info in textboxes
 var displayInfo = function (d, i) {
     var nodeinfo = i + " (";
     if (d.completed) nodeinfo = nodeinfo + "reach end state)";
     else nodeinfo = nodeinfo + "does not reach end state)";
 
-    // the start and end states are dummy
+    // The start and end states are dummy
     d3.select("#num-states-in-trajectory").text(d.trajectory.length - 2);
     d3.select("#selected-node-index").text(nodeinfo);
     d3.select("#infobox").text(compressStates(d.trajectory));
@@ -991,7 +985,7 @@ var extractDetails = function (detail_obj) {
     return detail_obj.event_type;
 };
 
-
+// Get stats from the data object
 var extractStats = function (stats_obj) {
     return JSON.stringify(stats_obj);
 };
@@ -1024,8 +1018,10 @@ var compressArray = function (pArray) {
     return actions;
 };
 
+// Set lowest opacity
 var lowestOpacity = 0.1;
 
+// Start the drag behavior, d3 pattern
 function behaviorDragstart(d, i) {
     d3.event.sourceEvent.stopPropagation();
 
@@ -1036,6 +1032,7 @@ function behaviorDragstart(d, i) {
     archiveStyle(this);
 }
 
+// Start the drag behavior, d3 pattern
 function groupDragStart(d, i) {
     d3.event.sourceEvent.stopPropagation();
 
@@ -1046,6 +1043,7 @@ function groupDragStart(d, i) {
     archiveStyle(this);
 }
 
+// Set style
 var archiveStyle = function (domNode) {
     prevStroke = d3.select(domNode).style("stroke");
     prevFill = d3.select(domNode).style("fill");
@@ -1054,6 +1052,7 @@ var archiveStyle = function (domNode) {
     prevTextFill = d3.select(domNode).select("text").style("fill");
 };
 
+// Restore style
 var restoreStyle = function (domNode) {
     d3.select(domNode).style("stroke-opacity", prevStrokeOpa)
         .style("stroke", prevStroke)
@@ -1063,6 +1062,7 @@ var restoreStyle = function (domNode) {
     d3.select(domNode).select("text").style("fill", prevTextFill);
 };
 
+// Highlight node by ID, used by Highlight panel
 var highlightNodeID = function (reverse = false, hoverNode) {
     nArray = d3.select("#playtrace-index").node().value.replace(/\s/g, '').split(",");
     if (nArray.length > 0 && nArray[0] !== '') {
@@ -1104,12 +1104,14 @@ var setPlaytraceIndex = function (d) {
     document.getElementById("playtrace-index").value = arr;
 }
 
+// Highlights the stroke the of the node, activated on playtrace hover in State Graph
 var highlightNodeStroke = function (nodes, bool) {
     nodes.user_ids.forEach(d => {
         d3.select(`.${d}`).classed('selectednode', bool)
     })
 };
 
+// Highlights the stroke the of the node, activated in Highlight panel
 var highlightNodeID_index = function (index = 0) {
     nArray = d3.select("#playtrace-index").node().value.replace(/\s/g, '').split(",");
     if (nArray.length > 0 && nArray[0] !== '') {
@@ -1121,14 +1123,14 @@ var highlightNodeID_index = function (index = 0) {
     }
 };
 
-
+// On hover displays trajectory sequence in lower right of screen
 function showInfoNodeID() {
     var index = parseInt(d3.select("#playtrace-show-info").node().value);
     displayInfo(data.trajectories[index], index);
 }
 /*************************** Highlighting ******************/
 
-
+// Clears all highlighting, direct DOM selection
 function clearHighlight() {
 
     // clear all styles for state graph
@@ -1156,16 +1158,16 @@ function clearHighlight() {
     displayingFreq = false;
 }
 
+// Clears any text input by the user
 function clearTextField() {
     document.getElementById('playtrace-index').value = '';
 }
 
-
+// Highlights by user id, used in the Highlight pane
 var highlightUserID = function () {
     clearHighlight();
     input = d3.select("#userID").node().value;
     // 1. find the user traj from the trajectories
-
     userIDs = input.split(",");
     first_one_highlighted = true;
     _.each(userIDs, function (userID, id) {
@@ -1214,7 +1216,6 @@ var highlightGroup = function (flag) {
     }
 };
 
-//working
 var highlightGroupWithName = function (grpName, color) {
     _.each(data.trajectories, function (traj, id) {
         //change this to high or low
@@ -1223,7 +1224,7 @@ var highlightGroupWithName = function (grpName, color) {
     });
 };
 
-
+// Highlights behavior ndoe by index, used in the Highlight panel
 function highlightBehaviorNodeIndex(index, color) {
     highlightTraj(data.trajectories[index], color);
     highlightBehaviorNode(index, color);
@@ -1231,6 +1232,7 @@ function highlightBehaviorNodeIndex(index, color) {
     displayingFreq = true;
 }
 
+// Highlights behavior ndoe by direct selection, used in the Highlight panel
 function highlightBehaviorNode(nodeToHighlight, color) {
     d3.select("#behaviornode" + nodeToHighlight).style("stroke-opacity", 1)
         .style("stroke", color)
@@ -1242,6 +1244,7 @@ function highlightBehaviorNode(nodeToHighlight, color) {
         .style("fill", color);
 }
 
+// Highlight Kth trajectories, used in the Highlight panel
 function toggleKthTrajectories() {
     clearHighlight();
     applyOpacity(lowestOpacity);
@@ -1252,6 +1255,7 @@ function toggleKthTrajectories() {
     }
 }
 
+// Highlight most frequent trajectories, used in the Highlight panel
 function toggleHighlightFreqTrajectories() {
     clearHighlight();
     var numHighlight = parseInt(d3.select("#number-highlight").node().value);
@@ -1265,8 +1269,8 @@ function toggleHighlightFreqTrajectories() {
     }
 }
 
+// Highlights trajectories by direct selection, used in Highlight panel
 function highlightTraj(trajString, color) {
-
     // 1. break the trajectory into nodes and statelinks ID
     ids = trajToIDs(trajString);
 
@@ -1300,6 +1304,7 @@ var trajToIDs = function (traj) {
     return selectArray;
 };
 
+// Manipulate opacity, user controlled in both Sequence and State Graphs
 var currentOpacity = 0.7;
 function incrementOpacity() {
     currentOpacity = currentOpacity + 0.1;
@@ -1307,18 +1312,21 @@ function incrementOpacity() {
     applyOpacity(currentOpacity);
 }
 
+// Manipulate opacity, user controlled in both Sequence and State Graphs
 function decrementOpacity() {
     currentOpacity = currentOpacity - 0.1;
     if (currentOpacity < 0.2) currentOpacity = 0.2;
     applyOpacity(currentOpacity);
 }
 
+// Manipulate opacity, user controlled in both Sequence and State Graphs
 function applyOpacity(opacityValue) {
     d3.selectAll(".statelink,.statenode,.behaviorlink,.behaviornode")
         .style("stroke-opacity", opacityValue)
         .style("fill-opacity", opacityValue);
 }
 
+// Manipulate layout, user controlled in both Sequence and State Graphs
 var freezeLayout = function () {
     // still moving
     if (behaviorforce.alpha() > 0) {
@@ -1339,6 +1347,7 @@ var fixLayout = function () {
         });
 }
 
+// Manipulate opacity, user controlled in both Sequence and State Graphs
 var incrementGraph = function (forceChoice) {
     var force = stateforce;
     if (forceChoice > 0)
@@ -1347,6 +1356,7 @@ var incrementGraph = function (forceChoice) {
     force.charge(currentCharge * 1.5).start();
 };
 
+// Manipulate opacity, user controlled in both Sequence and State Graphs
 var decrementGraph = function (forceChoice) {
     var force = stateforce;
     if (forceChoice > 0)
@@ -1355,6 +1365,7 @@ var decrementGraph = function (forceChoice) {
     force.charge(currentCharge * 0.7).start();
 };
 
+// Open and close highlight panel, vanilla javascript
 function toggleHighlightPanel() {
     let panel = document.getElementById('highlight-controls')
     let title = document.getElementById('highlight-title')
