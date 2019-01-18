@@ -26,4 +26,4 @@ Two data files are required for visualization: JSON files with the properly form
 ### License
 This software is patented and owned by [Truong-Huy D. Nguyen](https://github.com/truonghuy), [Magy Seif El-Nasr](https://camd.northeastern.edu/faculty/magy-seif-el-nasr/), [Andy Bryant](https://github.com/andymbryant), and [Northeastern University](https://www.khoury.northeastern.edu/).
 
-All rights reserved. Any use is forbidden without express written permission from the owners.
+All rights reserved. Any distribution is forbidden without express written permission from the owners.
