@@ -1,6 +1,8 @@
+// Set of 20 colors automatically assigned
 var fill = d3.scale.category20()
 var data;
 
+// Settings for graph nodes
 var minNodeSize = 5,
     maxNodeSize = 30,
     padding = 1.5,
@@ -9,15 +11,14 @@ var minNodeSize = 5,
 
 var displayingFreq = false;
 
+// Graph widths and heights, based on window sizing
 let stateWidth = window.innerWidth / 2;
 let stateHeight = window.innerHeight;
 let sequenceWidth = (window.innerWidth / 2) - 1;
 let sequenceHeight = window.innerHeight;
 let groupHeight = 250;
 let groupWidth = 250;
-// window.onresize = function (e) {
-//     stateWidth = window.innerWidth
-// }
+
 var div, svg;
 var groupSvg;
 
@@ -32,14 +33,17 @@ d3.json('data/visualization_ids.json', function (error, sessionList) {
     }
     dd = sessionList;
 
+    // Add match options to the UI
     var selectUI = d3.select("#level-select")
     var options = selectUI.selectAll('option').data(dd); // Data join
-
+    // Add names to the match options
     options.enter()
         .append("option")
         .text(function (d) {
             return d;
         });
+
+    // Automatically select first in list
     selectUI.property("value", dd[0]);
 
     // graph stores the loaded data
@@ -159,7 +163,7 @@ function updateJSON(error, json) {
         d3.select("#group-trajectories").text(data.team_trajectories.length);
         visualizeGroupData();
     }
-    
+
     // update info on num nodes and players
     d3.select("#num-sequences").text(data.trajectories.length);
     d3.select("#num-players").text(data.num_users);
@@ -778,7 +782,7 @@ function visualizeGroupData() {
         });
 
     groupNode.enter().append("g")
-        .attr("class", function(d) {
+        .attr("class", function (d) {
             return `groupNode groupNode${d.id}`
         })
         .call(groupDrag);
@@ -804,7 +808,7 @@ function visualizeGroupData() {
         //     tooltip
         //         .style('opacity', 0)
         // })
-        .on("click", function(d) {
+        .on("click", function (d) {
             clearGroupNodesActive()
             d3.select(this).classed('groupNode-active', true)
             highlightIndTrajectories(d)
@@ -844,7 +848,7 @@ function visualizeGroupData() {
 
 function clearGroupNodesActive() {
     d3.selectAll('.groupNode')
-        .each(function(d) {
+        .each(function (d) {
             let el = document.getElementById(`groupNode${d.index}`)
             if (el.classList.contains('groupNode-active')) {
                 el.classList.remove('groupNode-active')
@@ -853,10 +857,10 @@ function clearGroupNodesActive() {
 }
 
 function toggleGroupNodeActive() {
-    
+
 }
 
-function unique(value, index, self) { 
+function unique(value, index, self) {
     return self.indexOf(value) === index;
 }
 
