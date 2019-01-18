@@ -18,6 +18,9 @@ git clone
 cd glyph-dota
 run live server with IDE or package of choice
 ```
+### Data
+
+Two data files are required for visualization: JSON files with the properly formatted data for visualization (see [Data](/data) for examples) and a visualization_ids.json file, which contains an array of strings that correspond to the names of the files to be visualized.
 
 ### License
 This software is patented and owned by [Truong-Huy D. Nguyen](https://github.com/truonghuy), [Magy Seif El-Nasr](https://camd.northeastern.edu/faculty/magy-seif-el-nasr/), [Andy Bryant](https://github.com/andymbryant), and [Northeastern University](https://www.khoury.northeastern.edu/).
