@@ -1,5 +1,5 @@
 # Glyph
-## Dota 2 Data
+### Dota 2 Data
 
 Glyph application, visualizing data from Dota 2.
 
