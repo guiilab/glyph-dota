@@ -11,13 +11,13 @@ The State Graph is the node-link diagram of the game states and actions of the p
 
 The Sequence Graph visually shows nodes that represent the sequence patterns exhibited by players. Each node represents a full sequence and the distance between the nodes depends on the similarity of the sequence patterns between them.
 
-### Get Started
+### Getting Started
 ```sh
 git clone
 cd glyph-dota
 run live server with IDE or package of choice
 ```
-### File Structure
+### Files
 Glyph is an application built with vanilla JavaScript, HTML5, and CSS3. All of the JavaScript can be found in [app.js](app.js). The libraries are queried locally in [libs](/libs), as well as the data in [data](/data). 
 
 ### Data
